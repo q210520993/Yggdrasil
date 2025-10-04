@@ -12,7 +12,7 @@ open class BaseBedwarsMachine(override val game: SimpleBedwarsGame): BaseGameSta
     override fun getGameEndCondition(): Boolean {
         return  GAME_TIME.getTime() > 0 &&
                 getCurrentState() == GameState.STARTING &&
-                game.teams.filter { !it.isWipedOut }.size > 1 &&
+                game.getTeams().filter { !it.getIsWipedOut() }.size > 1 &&
                 game.getPlayers().isNotEmpty()
     }
 

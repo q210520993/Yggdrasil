@@ -3,6 +3,8 @@ package com.c1ok.bedwars.simple
 import com.c1ok.bedwars.BedwarsGame
 import com.c1ok.bedwars.BedwarsPlayer
 import com.c1ok.bedwars.Team
+import com.c1ok.bedwars.instance.ReuseInstance
+import com.c1ok.bedwars.simple.block.BedHandler
 import com.c1ok.yggdrasil.GameState
 import com.c1ok.yggdrasil.MiniPlayer
 import com.c1ok.yggdrasil.MiniPlayer.Companion.getOrigin
@@ -10,27 +12,115 @@ import com.c1ok.yggdrasil.base.BaseMiniGame
 import com.c1ok.yggdrasil.util.Reason
 import com.c1ok.yggdrasil.util.Result
 import net.minestom.server.coordinate.Pos
+import net.minestom.server.entity.GameMode
+import net.minestom.server.event.player.PlayerBlockBreakEvent
+import net.minestom.server.event.player.PlayerBlockPlaceEvent
+import net.minestom.server.event.player.PlayerDeathEvent
+import net.minestom.server.event.player.PlayerRespawnEvent
+import net.minestom.server.timer.Task
+import net.minestom.server.utils.validate.Check
+import java.util.*
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CopyOnWriteArraySet
 
 abstract class SimpleBedwarsGame(
     protected val waitingPos: Pos
 ): BedwarsGame, BaseMiniGame() {
 
-    val teams: MutableList<Team> = mutableListOf()
+    protected val teams: MutableList<Team> = CopyOnWriteArrayList()
+
     protected val bedwarsPlayers: MutableSet<BedwarsPlayer> = CopyOnWriteArraySet()
 
     protected abstract val bedwarsPlayerCreator: BedwarsPlayerCreator
 
-    @FunctionalInterface
-    interface BedwarsPlayerCreator {
+    override fun getTeams(): Collection<Team> {
+        return teams
+    }
+
+    override fun addTeam(team: Team) {
+        teams.add(team)
+    }
+
+
+    fun interface BedwarsPlayerCreator {
         fun create(bedWarsGame: SimpleBedwarsGame, miniPlayer: MiniPlayer): BedwarsPlayer
     }
 
-    override fun init(): CompletableFuture<Boolean> {
-        val origin = super.init()
-        initTeams()
-        return origin
+    override fun getBedwarsPlayers(): Collection<BedwarsPlayer> {
+        return bedwarsPlayers
+    }
+
+    override fun getBedwarsPlayer(uuid: UUID): BedwarsPlayer? {
+        return bedwarsPlayers.firstOrNull { it.miniPlayer.uuid == uuid }
+    }
+
+    override fun getPlayers(): Collection<MiniPlayer> {
+        return bedwarsPlayers.map { it.miniPlayer }
+    }
+
+    override fun getAllRegisteredTasks(): Collection<Task> {
+        return tasks
+    }
+
+    override fun onPlayerDeath(event: PlayerDeathEvent) {
+        if (getBedwarsPlayer(event.player.uuid) == null) {
+            return
+        }
+        if (gameStateMachine.getCurrentState() == GameState.LOBBY) {
+            event.player.respawn()
+        }
+        if (gameStateMachine.getCurrentState() != GameState.STARTING) {
+            return
+        }
+        val gamePlayer = getBedwarsPlayer(event.player.uuid) ?: return
+        val team = gamePlayer.getTeam() ?: return
+        if(team.getIsBedDestroy()) {
+            gamePlayer.spectator = true
+        }
+        (gamePlayer as? SimpleBedwarsPlayer)?.addDeathsCount(1)
+    }
+
+    override fun onBrokeBlock(event: PlayerBlockBreakEvent) {
+        val gamePlayer = getBedwarsPlayer(event.player.uuid) ?: run {
+            event.isCancelled = true
+            return
+        }
+        val handler = event.block.handler() ?: run {
+            event.isCancelled = true
+            return
+        }
+        val postion = event.blockPosition
+        if (handler is BedHandler) {
+            if (!handler.canDestory(gamePlayer)) {
+                event.isCancelled = true
+            }
+            return
+        }
+        if (instanceManager is ReuseInstance) {
+            val ins = instanceManager as ReuseInstance
+            if (ins.containBlock(event.blockPosition)) {
+                ins.removeBlock(postion)
+            } else {
+                event.isCancelled = true
+            }
+        }
+    }
+
+    override fun onPlaceBlock(event: PlayerBlockPlaceEvent) {
+        if (instanceManager is ReuseInstance) {
+            val ins = instanceManager as ReuseInstance
+            ins.addBlock(event.block, event.blockPosition)
+        }
+    }
+
+    override fun onPlayerRespawn(event: PlayerRespawnEvent) {
+        Check.stateCondition(getBedwarsPlayer(event.player.uuid) == null, "玩家没有参与该游戏")
+        val gamePlayer = getBedwarsPlayer(event.player.uuid)!!
+        if (gamePlayer.spectator) {
+            event.player.gameMode = GameMode.SPECTATOR
+        }
+        event.respawnPosition = gamePlayer.getTeam()?.respawnPoint ?: return
     }
 
     @Synchronized

@@ -19,6 +19,11 @@ interface BedwarsPlayer {
     val game: SimpleBedwarsGame
 
     /**
+     * 是否为旁观者
+     */
+    var spectator: Boolean
+
+    /**
      * 这是玩家的个性sidebar
      */
     val sidebar: Sidebar
@@ -43,7 +48,7 @@ interface BedwarsPlayer {
      */
     fun getResource(resourceID: String): Int
 
-    fun addResource(resourceID: String)
+    fun addResource(resourceID: String, count: Int): Result<Boolean>
 
     /**
      * 得到杀敌数

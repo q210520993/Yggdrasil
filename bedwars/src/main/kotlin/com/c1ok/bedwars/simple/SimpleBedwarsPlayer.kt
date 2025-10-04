@@ -10,7 +10,6 @@ import com.c1ok.yggdrasil.StoredInventory
 import com.c1ok.yggdrasil.util.Reason
 import com.c1ok.yggdrasil.util.Result
 import net.minestom.server.entity.GameMode
-import net.minestom.server.scoreboard.Sidebar
 
 abstract class SimpleBedwarsPlayer(override val miniPlayer: MiniPlayer, override val game: SimpleBedwarsGame):
     BedwarsPlayer {
@@ -55,9 +54,6 @@ abstract class SimpleBedwarsPlayer(override val miniPlayer: MiniPlayer, override
         }
         return Result(false, Reason.Failed("Unkonw"))
     }
-
-    override val sidebar: Sidebar
-        get() = TODO("Not yet implemented")
 
     @Synchronized
     fun addKillsCount(count: Int) {

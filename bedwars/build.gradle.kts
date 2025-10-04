@@ -14,8 +14,8 @@ repositories {
 dependencies {
     testImplementation(kotlin("test"))
     implementation("net.minestom:minestom:2025.09.13-1.21.8")
-    implementation("net.minestom:testing:2025.09.13-1.21.8")
-    implementation(project(":api"))
+    testImplementation("net.minestom:testing:2025.09.13-1.21.8")
+    api(project(":api"))
 }
 
 tasks.test {

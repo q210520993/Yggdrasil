@@ -1,6 +1,6 @@
 package com.c1ok.yggdrasil.util
 
-interface Trigger{
+interface Trigger {
 
     fun onTimeTrigger(currentTime: Long)
 

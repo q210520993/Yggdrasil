@@ -4,3 +4,5 @@ plugins {
 rootProject.name = "Yggdrasil"
 include("api")
 include("bedwars")
+include("bedwars:example")
+findProject(":bedwars:example")?.name = "example"

@@ -8,6 +8,7 @@ import net.minestom.server.event.EventNode
 import net.minestom.server.event.player.PlayerBlockBreakEvent
 import net.minestom.server.event.player.PlayerBlockPlaceEvent
 import net.minestom.server.event.player.PlayerDeathEvent
+import net.minestom.server.event.player.PlayerRespawnEvent
 
 object SimplePlayerListener {
 
@@ -31,12 +32,10 @@ object SimplePlayerListener {
             val game = getGame(it.player) ?: return@addListener
             game.onPlayerDeath(it)
         }
-        getBedwarsEventChild().addListener(PlayerDeathEvent::class.java) {
+        getBedwarsEventChild().addListener(PlayerRespawnEvent::class.java) {
             val game = getGame(it.player) ?: return@addListener
-            game.onPlayerDeath(it)
+            game.onPlayerRespawn(it)
         }
-
-
 
     }
 

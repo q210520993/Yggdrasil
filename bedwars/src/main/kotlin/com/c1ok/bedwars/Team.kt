@@ -37,7 +37,7 @@ interface Team {
     val bedDirection: Direction
 
     // 当前游戏实例
-    val currentGame: SimpleBedwarsGame
+    val currentGame: BedwarsGame
 
     val respawnPoint: Pos
 
@@ -45,11 +45,19 @@ interface Team {
 
     val players: Set<BedwarsPlayer>
 
-    // 床是否被摧毁（改名更明确）- 改进
-    var isBedDestroyed: Boolean
+    fun getIsBedDestroy(): Boolean
 
-    // 队伍是否被团灭
-    var isWipedOut: Boolean
+    /**
+     * 设置床是否为破坏状态
+     * @param bed Boolean
+     */
+    fun setBedDestroy(bed: Boolean)
+
+    /**
+     *
+     * @return Boolean
+     */
+    fun getIsWipedOut(): Boolean
 
     fun createBed()
     fun destroyBed()
