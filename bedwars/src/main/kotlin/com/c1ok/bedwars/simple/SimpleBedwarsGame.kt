@@ -2,6 +2,7 @@ package com.c1ok.bedwars.simple
 
 import com.c1ok.bedwars.BedwarsGame
 import com.c1ok.bedwars.BedwarsPlayer
+import com.c1ok.bedwars.SpecialItemManager
 import com.c1ok.bedwars.Team
 import com.c1ok.bedwars.instance.ReuseInstance
 import com.c1ok.bedwars.simple.block.BedHandler
@@ -26,7 +27,7 @@ import java.util.concurrent.CopyOnWriteArraySet
 
 abstract class SimpleBedwarsGame(
     protected val waitingPos: Pos
-): BedwarsGame, BaseMiniGame() {
+): BedwarsGame, BaseMiniGame(), SpecialItemManager by SimpleSpecialManager() {
 
     protected val teams: MutableList<Team> = CopyOnWriteArrayList()
 
@@ -169,7 +170,11 @@ abstract class SimpleBedwarsGame(
     }
 
     override fun onEnd(): CompletableFuture<Void> {
-        clearTeam()
+        teams.forEach {
+            it.onGameStop()
+        }
+        teams.clear()
+        bedwarsPlayers.clear()
         return super.onEnd()
     }
 

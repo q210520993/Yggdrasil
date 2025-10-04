@@ -1,5 +1,6 @@
 package com.c1ok.bedwars
 
+import com.c1ok.bedwars.simple.SimpleSpecialManager
 import com.c1ok.bedwars.simple.listener.SimplePlayerListener
 import com.c1ok.yggdrasil.GameManager
 import com.c1ok.yggdrasil.MiniPlayerManager
@@ -55,6 +56,7 @@ class Bedwars(
         minecraftProcess.eventHandler().addChild(eventNode)
         if (isSimple) {
             SimplePlayerListener.register()
+            SimpleSpecialManager.registerListenerToGame(eventNode, playerManager)
         }
     }
 

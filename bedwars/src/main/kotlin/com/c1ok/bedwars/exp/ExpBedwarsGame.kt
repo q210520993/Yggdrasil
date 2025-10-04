@@ -17,14 +17,14 @@ import net.minestom.server.event.player.PlayerBlockPlaceEvent
 import net.minestom.server.event.player.PlayerDeathEvent
 import net.minestom.server.timer.Task
 import java.util.*
+import java.util.concurrent.CompletableFuture
 
-class ExpBedwarsGame(
+open class ExpBedwarsGame(
     waitingPos: Pos,
     override val minPlayers: Int,
     override val maxPlayers: Int,
     override val displayName: Component,
     override val instanceManager: InstanceManager,
-    vararg bounds: Bound
 ): SimpleBedwarsGame(waitingPos) {
 
     override val uuid: UUID = UUID.randomUUID()
@@ -33,8 +33,11 @@ class ExpBedwarsGame(
         return@BedwarsPlayerCreator ExpPlayer(mp, this)
     }
 
-    init {
-        addBound(*bounds)
+    open fun registerBounds() {}
+
+    override fun init(): CompletableFuture<Boolean> {
+        registerBounds()
+        return super.init()
     }
 
     override val gameStateMachine: GameStateMachine by lazy {

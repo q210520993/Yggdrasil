@@ -12,7 +12,7 @@ import java.util.*
  * 代表着一个bedwarsGame
  * 有一些事件处理器，这是一个BedwarsGame必要的
  */
-interface BedwarsGame: MiniGame {
+interface BedwarsGame: MiniGame, SpecialItemManager {
 
 
     fun onPlaceBlock(event: PlayerBlockPlaceEvent)

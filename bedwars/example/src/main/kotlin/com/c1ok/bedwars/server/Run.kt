@@ -1,6 +1,7 @@
 package com.c1ok.bedwars.server
 
 import com.c1ok.bedwars.Bedwars
+import com.c1ok.bedwars.lobby.lobbyInit
 import com.c1ok.bedwars.lobby.lobbyInstance
 import com.c1ok.bedwars.simple.BedwarsManager
 import com.c1ok.bedwars.simple.SimpleMiniPlayerManager
@@ -12,6 +13,7 @@ fun main() {
 
     EasyTerminal.start()
     val server = MinecraftServer.init()
+    lobbyInit()
     val bedwars = Bedwars.Builder(MinecraftServer.process())
         .setLobby(lobbyInstance)
         .setEventNode(EventNode.all("bedwarsGame").setPriority(-8))

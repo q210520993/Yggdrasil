@@ -7,7 +7,7 @@ import net.minestom.server.instance.Instance
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
-class BedwarsManager: GameManager<BedwarsGame> {
+open class BedwarsManager: GameManager<BedwarsGame> {
     private val games = ConcurrentHashMap<UUID, BedwarsGame>()
 
     override fun getGames(): List<BedwarsGame> {
