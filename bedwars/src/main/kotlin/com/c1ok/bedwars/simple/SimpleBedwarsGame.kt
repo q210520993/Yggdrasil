@@ -1,9 +1,6 @@
 package com.c1ok.bedwars.simple
 
-import com.c1ok.bedwars.BedwarsGame
-import com.c1ok.bedwars.BedwarsPlayer
-import com.c1ok.bedwars.SpecialItemManager
-import com.c1ok.bedwars.Team
+import com.c1ok.bedwars.*
 import com.c1ok.bedwars.instance.ReuseInstance
 import com.c1ok.bedwars.simple.block.BedHandler
 import com.c1ok.yggdrasil.GameState
@@ -18,6 +15,7 @@ import net.minestom.server.event.player.PlayerBlockBreakEvent
 import net.minestom.server.event.player.PlayerBlockPlaceEvent
 import net.minestom.server.event.player.PlayerDeathEvent
 import net.minestom.server.event.player.PlayerRespawnEvent
+import net.minestom.server.scoreboard.Sidebar
 import net.minestom.server.timer.Task
 import net.minestom.server.utils.validate.Check
 import java.util.*
@@ -34,6 +32,10 @@ abstract class SimpleBedwarsGame(
     protected val bedwarsPlayers: MutableSet<BedwarsPlayer> = CopyOnWriteArraySet()
 
     protected abstract val bedwarsPlayerCreator: BedwarsPlayerCreator
+
+    override val generator: Generator by lazy {
+        SimpleGenerator(this)
+    }
 
     override fun getTeams(): Collection<Team> {
         return teams
@@ -150,6 +152,7 @@ abstract class SimpleBedwarsGame(
             bedwarsPlayers.add(playerB)
             minestomPlayer.setInstance(this.instanceManager.getCurrentInstance(), waitingPos)
             minestomPlayer.teleport(waitingPos)
+            getLobbySidebar().addViewer(minestomPlayer)
             playerB.refreshPlayer()
             return Result(true, Reason.Success)
         }
@@ -164,6 +167,9 @@ abstract class SimpleBedwarsGame(
         }
         val bedwarsPlayer = bedwarsPlayers.firstOrNull { it.miniPlayer == player } ?: return Result(false, Reason.Failed("玩家不存在在这场游戏中"))
         bedwarsPlayer.storedInventory.with(minePlayer)
+        if (gameStateMachine.getCurrentState() == GameState.LOBBY) {
+            getLobbySidebar().removeViewer(minePlayer)
+        }
         // TODO Set Player Instance To Lobby
         // minePlayer.setInstance(lobby)
         return Result(true, Reason.Success)
@@ -177,5 +183,17 @@ abstract class SimpleBedwarsGame(
         bedwarsPlayers.clear()
         return super.onEnd()
     }
+
+    override fun getPlayerSidebar(miniPlayer: MiniPlayer): Sidebar? {
+        return getBedwarsPlayer(miniPlayer)?.sidebar
+    }
+
+    override fun getGlobalSidebar(id: String): Sidebar? {
+        if (id != "lobby") return null
+        return getLobbySidebar()
+    }
+
+
+    protected abstract fun getLobbySidebar(): Sidebar
 
 }

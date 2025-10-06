@@ -1,5 +1,6 @@
 package com.c1ok.bedwars
 
+import com.c1ok.bedwars.simple.BedwarsManager
 import com.c1ok.bedwars.simple.SimpleSpecialManager
 import com.c1ok.bedwars.simple.listener.SimplePlayerListener
 import com.c1ok.yggdrasil.GameManager
@@ -25,7 +26,7 @@ import net.minestom.server.utils.validate.Check
 class Bedwars(
     val eventNode: EventNode<Event>,
     val playerManager: MiniPlayerManager,
-    val gameManager: GameManager<BedwarsGame>,
+    val gameManager: BedwarsManager,
     val minecraftProcess: ServerProcess,
     val lobby: Instance
 ) {
@@ -66,7 +67,7 @@ class Bedwars(
 
         private lateinit var playerManager: MiniPlayerManager
 
-        private lateinit var gameManager: GameManager<BedwarsGame>
+        private lateinit var gameManager: BedwarsManager
 
         private lateinit var lobby: Instance
 
@@ -85,7 +86,7 @@ class Bedwars(
             return this
         }
 
-        fun setGameManager(gameManager: GameManager<BedwarsGame>): Builder {
+        fun setGameManager(gameManager: BedwarsManager): Builder {
             this.gameManager = gameManager
             return this
         }

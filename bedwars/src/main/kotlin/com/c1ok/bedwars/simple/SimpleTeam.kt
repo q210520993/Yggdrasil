@@ -21,7 +21,7 @@ import net.minestom.server.utils.Direction
 import java.util.*
 import java.util.concurrent.CopyOnWriteArraySet
 
-open class BedwarsTeam(
+open class SimpleTeam(
     // MiniMessage支持
     final override val name: String,
     final override val displayName: Component,

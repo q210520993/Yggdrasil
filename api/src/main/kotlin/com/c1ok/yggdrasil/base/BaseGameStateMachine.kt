@@ -26,6 +26,8 @@ abstract class BaseGameStateMachine(override val game: BaseMiniGame): GameStateM
 
     protected var isWatingClock = false
 
+
+
     override fun init() {
         if (getCurrentState() != GameState.CLOSED && getCurrentState() != GameState.RESTARTING) {
             logger.error("初始化失败，状态不对")

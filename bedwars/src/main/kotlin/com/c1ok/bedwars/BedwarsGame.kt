@@ -14,6 +14,7 @@ import java.util.*
  */
 interface BedwarsGame: MiniGame, SpecialItemManager {
 
+    val generator: Generator
 
     fun onPlaceBlock(event: PlayerBlockPlaceEvent)
     fun onBrokeBlock(event: PlayerBlockBreakEvent)
@@ -23,11 +24,6 @@ interface BedwarsGame: MiniGame, SpecialItemManager {
     fun addTeam(team: Team)
 
     fun getTeams(): Collection<Team>
-
-    /**
-     * 在结束时清除队伍
-     */
-    fun clearTeam()
 
     fun getBedwarsPlayers(): Collection<BedwarsPlayer>
 

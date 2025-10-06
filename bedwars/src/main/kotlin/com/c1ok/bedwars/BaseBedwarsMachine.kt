@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicReference
 
 open class BaseBedwarsMachine(override val game: SimpleBedwarsGame): BaseGameStateMachine(game) {
 
-    private val state_: AtomicReference<GameState> = AtomicReference()
+    private val state_: AtomicReference<GameState> = AtomicReference(GameState.CLOSED)
 
     override fun getGameEndCondition(): Boolean {
         return  GAME_TIME.getTime() > 0 &&

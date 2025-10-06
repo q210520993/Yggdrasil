@@ -47,6 +47,9 @@ abstract class BaseMiniGame: MiniGame {
 
     override fun init(): CompletableFuture<Boolean> {
         try {
+            // 刷新世界
+            instanceManager.refrash()
+            gameStateMachine.init()
             // 做一个任务用来定时清理已经结束的任务
             SchedulerBuilder(instanceManager.getCurrentInstance().scheduler(), Runnable {
                 tasks.removeIf {
@@ -56,9 +59,6 @@ abstract class BaseMiniGame: MiniGame {
                 gameStateMachine.getCurrentState() == GameState.STARTING
                         || gameStateMachine.getCurrentState() == GameState.INITIALIZING
             }.schedule()
-            gameStateMachine.init()
-            // 刷新世界
-            instanceManager.refrash()
             bounds.forEach {
                 it.onInit(isFirst)
             }

@@ -1,3 +1,5 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 plugins {
     kotlin("jvm")
 }
@@ -27,6 +29,17 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 }
+
+tasks.withType<ShadowJar> {
+    manifest {
+        attributes(
+            "Main-Class" to "com.c1ok.bedwars.server.RunKt",
+            "Multi-Release" to true
+        )
+    }
+    mergeServiceFiles()
+}
+
 kotlin {
     jvmToolchain(21)
 }

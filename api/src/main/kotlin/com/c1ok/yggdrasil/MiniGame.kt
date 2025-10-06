@@ -3,6 +3,7 @@ package com.c1ok.yggdrasil
 import com.c1ok.yggdrasil.util.Result
 import net.kyori.adventure.text.Component
 import net.minestom.server.entity.Player
+import net.minestom.server.scoreboard.Sidebar
 import net.minestom.server.timer.Task
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -135,5 +136,19 @@ interface MiniGame {
     fun getOfflinePlayer(): Collection<MiniPlayer> {
         return getPlayers().filter { !it.isOnline() }
     }
+
+    /**
+     * 获取到玩家的sidebar
+     * @param miniPlayer MiniPlayer
+     * @return Sidebar
+     */
+    fun getPlayerSidebar(miniPlayer: MiniPlayer): Sidebar?
+
+    /**
+     * 获取到一种全局的sidebar
+     * @param id String
+     * @return Sidebar
+     */
+    fun getGlobalSidebar(id: String): Sidebar?
 
 }
