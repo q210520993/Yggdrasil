@@ -1,5 +1,6 @@
 package com.c1ok.bedwars.instance
 
+import com.c1ok.bedwars.Bedwars
 import com.c1ok.yggdrasil.InstanceManager
 import net.minestom.server.MinecraftServer
 import net.minestom.server.coordinate.Point

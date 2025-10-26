@@ -5,10 +5,7 @@ import com.c1ok.bedwars.BedwarsGame
 import net.minestom.server.entity.Player
 import net.minestom.server.event.Event
 import net.minestom.server.event.EventNode
-import net.minestom.server.event.player.PlayerBlockBreakEvent
-import net.minestom.server.event.player.PlayerBlockPlaceEvent
-import net.minestom.server.event.player.PlayerDeathEvent
-import net.minestom.server.event.player.PlayerRespawnEvent
+import net.minestom.server.event.player.*
 
 object SimplePlayerListener {
 
@@ -35,6 +32,13 @@ object SimplePlayerListener {
         getBedwarsEventChild().addListener(PlayerRespawnEvent::class.java) {
             val game = getGame(it.player) ?: return@addListener
             game.onPlayerRespawn(it)
+        }
+
+        getBedwarsEventChild().addListener(PlayerDisconnectEvent::class.java) {
+            val player = Bedwars.instance.playerManager.getPlayerFromUUID(it.player.uuid) ?: return@addListener
+            val game = (player.game as? BedwarsGame) ?: return@addListener
+            game.getBedwarsPlayer(it.player.uuid) ?: return@addListener
+            game.removePlayer(player)
         }
 
     }

@@ -5,9 +5,13 @@ import com.c1ok.bedwars.simple.SimpleSpecialManager
 import com.c1ok.bedwars.simple.listener.SimplePlayerListener
 import com.c1ok.yggdrasil.GameManager
 import com.c1ok.yggdrasil.MiniPlayerManager
+import com.c1ok.yggdrasil.network.onPlayerSpawnNetwork
+import net.minestom.server.MinecraftServer
 import net.minestom.server.ServerProcess
+import net.minestom.server.coordinate.Pos
 import net.minestom.server.event.Event
 import net.minestom.server.event.EventNode
+import net.minestom.server.event.player.PlayerSpawnEvent
 import net.minestom.server.instance.Instance
 import net.minestom.server.utils.validate.Check
 
@@ -28,7 +32,7 @@ class Bedwars(
     val playerManager: MiniPlayerManager,
     val gameManager: BedwarsManager,
     val minecraftProcess: ServerProcess,
-    val lobby: Instance
+    val lobby: Lobby
 ) {
 
     companion object {
@@ -41,6 +45,13 @@ class Bedwars(
 
     }
 
+    class Lobby(val instance: Instance, val respawnPos: Pos)
+
+    var debug: Boolean = true
+
+
+    val networkEventNode = EventNode.all("Bedwars-Network").setPriority(999)
+
     var isSimple: Boolean = true
 
     /**
@@ -51,6 +62,19 @@ class Bedwars(
         Check.isTrue(!getIsInit(), "无法再次应用，该Bedwars已经初始化过一次了")
         instance = this
         registerEventNode()
+        registerNetworkEventNode()
+    }
+
+    fun debugRunnable(action: () -> Unit) {
+        if (debug) {
+            action.invoke()
+        }
+    }
+
+    private fun registerNetworkEventNode() {
+        networkEventNode.addListener(PlayerSpawnEvent::class.java) {
+            onPlayerSpawnNetwork(it)
+        }
     }
 
     private fun registerEventNode() {
@@ -70,6 +94,8 @@ class Bedwars(
         private lateinit var gameManager: BedwarsManager
 
         private lateinit var lobby: Instance
+
+        private lateinit var respawnPos: Pos
 
         /**
          * 是否应用简单模式的模板
@@ -101,8 +127,13 @@ class Bedwars(
             return this
         }
 
+        fun setRespawnPos(pos: Pos): Builder {
+            this.respawnPos = pos
+            return this
+        }
+
         fun build(): Bedwars {
-            val bedwars= Bedwars(eventNode, playerManager, gameManager, process, lobby)
+            val bedwars= Bedwars(eventNode, playerManager, gameManager, process, Lobby(lobby, respawnPos))
             bedwars.isSimple = isSimple
             return bedwars
         }

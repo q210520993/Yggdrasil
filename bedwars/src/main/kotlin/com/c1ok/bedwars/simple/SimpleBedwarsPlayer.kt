@@ -39,20 +39,12 @@ abstract class SimpleBedwarsPlayer(override val miniPlayer: MiniPlayer, override
     }
 
     @Synchronized
-    override fun setTeam(team: Team): Result<Boolean> {
-        if (game.gameStateMachine.getCurrentState() == GameState.STARTING) {
-            return Result(false, Reason.Failed("开始中无法更换队伍"))
-        }
-        if (game.gameStateMachine.getCurrentState() == GameState.LOBBY) {
-            if (team.addPlayer(this)) {
-                if (playerteam != null) {
-                    playerteam?.removePlayer(this)
-                }
-                playerteam = team
-                return Result(true, Reason.Success)
-            }
-        }
-        return Result(false, Reason.Failed("Unkonw"))
+    override fun setTeam(team: Team) {
+        playerteam = team
+    }
+
+    override fun getTeam(): Team? {
+        return playerteam
     }
 
     @Synchronized

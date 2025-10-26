@@ -7,6 +7,7 @@ import com.c1ok.yggdrasil.util.SchedulerBuilder
 import net.minestom.server.utils.validate.Check
 import org.slf4j.LoggerFactory
 import java.time.Duration
+import java.util.concurrent.atomic.AtomicBoolean
 
 abstract class BaseGameStateMachine(override val game: BaseMiniGame): GameStateMachine {
 
@@ -19,6 +20,7 @@ abstract class BaseGameStateMachine(override val game: BaseMiniGame): GameStateM
      */
     val WAITING_TIME = DefaultTimer(120)
 
+    var forceStarted = AtomicBoolean(false)
     /**
      * 游戏时长，单位秒
      */
@@ -57,9 +59,13 @@ abstract class BaseGameStateMachine(override val game: BaseMiniGame): GameStateM
                 }
             })
             .condition {
+                if (forceStarted.get()) {
+                    return@condition false
+                }
                 WAITING_TIME.getTime() >= 0 && getCurrentState() == GameState.LOBBY
             }
             .conditionFalseTask {
+                forceStarted.set(false)
                 isWatingClock = false
                 WAITING_TIME.reset(true)
                 if (getCurrentState() != GameState.LOBBY) return@conditionFalseTask
@@ -73,7 +79,9 @@ abstract class BaseGameStateMachine(override val game: BaseMiniGame): GameStateM
             return
         }
         setState(GameState.STARTING)
-        game.onStart()
+        kotlin.runCatching {
+            game.onStart()
+        }.getOrNull()
         SchedulerBuilder(game.instanceManager.getCurrentInstance().scheduler(), Runnable {
             GAME_TIME.reduceTime(1)
         }).delay(Duration.ofSeconds(1)).condition {
@@ -106,14 +114,9 @@ abstract class BaseGameStateMachine(override val game: BaseMiniGame): GameStateM
         setState(GameState.RESTARTING)
         game.restart().thenAccept {
             // 不直接调用 game.init()，而是提交一个延迟任务，目的是延迟到所有任务皆以关闭 :)
-            // 这个延迟任务的实现也是有点抽象的，就是每隔一秒都会检查一下有没有任务不是关闭的，如果有，哪就继续，没有的话就进入init了
-            SchedulerBuilder(game.instanceManager.getCurrentInstance().scheduler(), Runnable {}).delay(Duration.ofSeconds(1)).condition {
-                game.getAllRegisteredTasks().any {
-                    it.isAlive
-                }
-            }.conditionFalseTask {
+            SchedulerBuilder(game.instanceManager.getCurrentInstance().scheduler(), Runnable {
                 game.init()
-            }.repeat(Duration.ofSeconds(1)).schedule() // 延迟 几 秒等待所有任务结束 :P
+            }).delay(Duration.ofSeconds(5)).schedule() // 延迟 3 秒等待所有任务结束 :P
         }
     }
 

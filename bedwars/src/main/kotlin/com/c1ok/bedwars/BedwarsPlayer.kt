@@ -33,7 +33,7 @@ interface BedwarsPlayer {
      * @param team Team
      * @return Result<Boolean>
      */
-    fun setTeam(team: Team): Result<Boolean>
+    fun setTeam(team: Team)
 
     /**
      * 设置玩家的队伍

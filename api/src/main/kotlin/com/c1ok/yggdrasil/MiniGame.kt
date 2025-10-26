@@ -20,6 +20,10 @@ interface MiniGame {
 
     val minPlayers: Int
 
+    fun getCurrentState(): GameState {
+        return gameStateMachine.getCurrentState()
+    }
+
     /**
      * 游戏的uuid
      */

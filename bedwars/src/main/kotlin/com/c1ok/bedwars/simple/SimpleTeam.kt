@@ -6,6 +6,8 @@ import com.c1ok.bedwars.Team
 import com.c1ok.bedwars.simple.block.placeBed
 import com.c1ok.yggdrasil.GameState
 import com.c1ok.yggdrasil.MiniPlayer.Companion.getOrigin
+import com.c1ok.yggdrasil.util.Reason
+import com.c1ok.yggdrasil.util.Result
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.title.Title
 import net.minestom.server.coordinate.Point
@@ -49,7 +51,7 @@ open class SimpleTeam(
     }
 
     override fun getIsWipedOut(): Boolean {
-        return players.all { it.spectator }
+        return players.all { it.spectator } || players.size != 0
     }
 
     override fun createBed() {
@@ -71,33 +73,45 @@ open class SimpleTeam(
         return players.contains(player)
     }
 
-    override fun addPlayer(player: BedwarsPlayer): Boolean {
-        if (currentGame.gameStateMachine.getCurrentState() != GameState.LOBBY) return false
-        if (players.size > maxPlayers) return false
+    override fun addPlayer(player: BedwarsPlayer): Result<Boolean> {
+        if (currentGame.gameStateMachine.getCurrentState() != GameState.LOBBY) return Result.createFailed("游戏状态不允许调换队伍")
+        if (players.size > maxPlayers) return Result.createFailed("队伍满员了")
+        if (player.game != currentGame) return Result.createFailed("玩家当前的游戏不是该队伍所属的游戏")
+        if (player.getTeam() == this) return Result.createFailed("你已经属于当前的队伍了")
         if (player.getTeam() != null) {
             player.getTeam()?.removePlayer(player)
         }
+        val r = players.add(player)
         player.setTeam(this)
         player.miniPlayer.getOrigin()?.let {
             setPlayerDisplay(it)
         }
-        return players.add(player)
+        if (!r) {
+            return Result.createFailed("未知错误。请联系管理员及时修复！")
+        }
+        return Result(true, Reason.Success)
     }
 
     private fun setPlayerDisplay(player: Player) {
         player.displayName = displayName.append(Component.text(player.username))
     }
 
-    override fun removePlayer(player: BedwarsPlayer): Boolean {
+    override fun removePlayer(player: BedwarsPlayer): Result<Boolean> {
         if (currentGame.gameStateMachine.getCurrentState() == GameState.LOBBY) {
-            return players.remove(player)
+            if (!players.remove(player)) {
+                return Result.createFailed("未知错误。请联系管理员及时修复！")
+            }
+            return Result(true, Reason.Success)
         }
         if (currentGame.gameStateMachine.getCurrentState() == GameState.STARTING) {
             player.spectator = true
             player.miniPlayer.getOrigin()?.gameMode = GameMode.SPECTATOR
-            return players.remove(player)
+            if (!players.remove(player)) {
+                return Result.createFailed("未知错误。请联系管理员及时修复！")
+            }
+            return Result(true, Reason.Success)
         }
-        return false
+        return Result.createFailed("未知错误。请联系管理员及时修复！")
     }
 
     override fun getTeamItemStack(): ItemStack {

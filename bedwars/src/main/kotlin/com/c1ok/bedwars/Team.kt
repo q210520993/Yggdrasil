@@ -1,6 +1,7 @@
 package com.c1ok.bedwars
 
 import com.c1ok.bedwars.simple.SimpleBedwarsGame
+import com.c1ok.yggdrasil.util.Result
 import net.kyori.adventure.text.Component
 import net.minestom.server.coordinate.Point
 import net.minestom.server.coordinate.Pos
@@ -67,8 +68,8 @@ interface Team {
 
     // 玩家管理方法
     fun containsPlayer(player: BedwarsPlayer): Boolean
-    fun addPlayer(player: BedwarsPlayer): Boolean
-    fun removePlayer(player: BedwarsPlayer): Boolean
+    fun addPlayer(player: BedwarsPlayer): Result<Boolean>
+    fun removePlayer(player: BedwarsPlayer): Result<Boolean>
 
     // 选择界面的物品
     fun getTeamItemStack(): ItemStack

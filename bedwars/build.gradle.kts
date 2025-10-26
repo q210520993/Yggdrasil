@@ -17,6 +17,7 @@ dependencies {
     testImplementation("net.minestom:testing:2025.09.13-1.21.8")
     api("net.kyori:adventure-text-minimessage:4.23.0")
     api(project(":api"))
+    api(project(":util-InvUI"))
 }
 
 tasks.test {

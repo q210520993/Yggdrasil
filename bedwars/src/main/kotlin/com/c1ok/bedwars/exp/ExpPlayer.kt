@@ -18,8 +18,6 @@ class ExpPlayer(miniPlayer: MiniPlayer, game: ExpBedwarsGame) : SimpleBedwarsPla
 
     override var spectator: Boolean = false
 
-    private var team_: Team? = null
-
     override val sidebar: Sidebar = buildSidebar()
 
     /**
@@ -112,10 +110,6 @@ class ExpPlayer(miniPlayer: MiniPlayer, game: ExpBedwarsGame) : SimpleBedwarsPla
             MiniMessage.miniMessage().deserialize(
                 " <red> ✘ <color:#AAAAAA>(<gray>${team.players.filter { !it.spectator }.size}<color:#AAAAAA>)")
         }
-    }
-
-    override fun getTeam(): Team? {
-        return team_
     }
 
     override fun getResource(resourceID: String): Int {

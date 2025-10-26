@@ -1,5 +1,6 @@
 package com.c1ok.bedwars.exp.bound
 
+import com.c1ok.bedwars.Bedwars
 import com.c1ok.bedwars.BedwarsPlayer
 import com.c1ok.bedwars.Team
 import com.c1ok.bedwars.exp.ExpBedwarsGame

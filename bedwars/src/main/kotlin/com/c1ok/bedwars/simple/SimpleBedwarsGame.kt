@@ -18,6 +18,7 @@ import net.minestom.server.event.player.PlayerRespawnEvent
 import net.minestom.server.scoreboard.Sidebar
 import net.minestom.server.timer.Task
 import net.minestom.server.utils.validate.Check
+import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CopyOnWriteArrayList
@@ -26,6 +27,10 @@ import java.util.concurrent.CopyOnWriteArraySet
 abstract class SimpleBedwarsGame(
     protected val waitingPos: Pos
 ): BedwarsGame, BaseMiniGame(), SpecialItemManager by SimpleSpecialManager() {
+
+    companion object {
+        private val logger = LoggerFactory.getLogger(SimpleBedwarsGame::class.java)
+    }
 
     protected val teams: MutableList<Team> = CopyOnWriteArrayList()
 
@@ -110,6 +115,20 @@ abstract class SimpleBedwarsGame(
         }
     }
 
+    override fun onStart(): CompletableFuture<Void> {
+        val void = super.onStart()
+        Bedwars.instance.debugRunnable {
+            logger.info("游戏{}开始了", this.displayName)
+        }
+        getBedwarsPlayers().forEach {
+            val player = it.miniPlayer.getOrigin() ?: return@forEach
+            getLobbySidebar().removeViewer(player)
+            player.inventory.clear()
+            player.gameMode = GameMode.SURVIVAL
+        }
+        return void
+    }
+
     override fun onPlaceBlock(event: PlayerBlockPlaceEvent) {
         if (instanceManager is ReuseInstance) {
             val ins = instanceManager as ReuseInstance
@@ -167,20 +186,28 @@ abstract class SimpleBedwarsGame(
         }
         val bedwarsPlayer = bedwarsPlayers.firstOrNull { it.miniPlayer == player } ?: return Result(false, Reason.Failed("玩家不存在在这场游戏中"))
         bedwarsPlayer.storedInventory.with(minePlayer)
+        bedwarsPlayer.getTeam()?.removePlayer(bedwarsPlayer)
         if (gameStateMachine.getCurrentState() == GameState.LOBBY) {
             getLobbySidebar().removeViewer(minePlayer)
         }
+        player.game = null
         // TODO Set Player Instance To Lobby
-        // minePlayer.setInstance(lobby)
+         minePlayer.setInstance(Bedwars.instance.lobby.instance, Bedwars.instance.lobby.respawnPos  )
         return Result(true, Reason.Success)
     }
 
     override fun onEnd(): CompletableFuture<Void> {
+        getBedwarsPlayers().onEach {
+            removePlayer(it.miniPlayer)
+        }
         teams.forEach {
             it.onGameStop()
         }
         teams.clear()
         bedwarsPlayers.clear()
+        Bedwars.instance.debugRunnable {
+            logger.info("游戏{}结束了", this.displayName)
+        }
         return super.onEnd()
     }
 
@@ -191,6 +218,13 @@ abstract class SimpleBedwarsGame(
     override fun getGlobalSidebar(id: String): Sidebar? {
         if (id != "lobby") return null
         return getLobbySidebar()
+    }
+
+    override fun restart(): CompletableFuture<Void> {
+        println("Restart！")
+        val res = super.restart()
+        println("Restart！Successfully")
+        return res
     }
 
 

@@ -29,17 +29,9 @@ subprojects {
                 options.isFork = true
             }
         }
-
-        test {
-            useJUnitPlatform()
-        }
     }
 }
 
 tasks.withType<ShadowJar> {
     mergeServiceFiles()
-}
-
-tasks.test {
-    useJUnitPlatform()
 }
