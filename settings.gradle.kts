@@ -7,3 +7,4 @@ include("bedwars")
 include("bedwars:example")
 findProject(":bedwars:example")?.name = "example"
 include("util-InvUI")
+include("limbo")

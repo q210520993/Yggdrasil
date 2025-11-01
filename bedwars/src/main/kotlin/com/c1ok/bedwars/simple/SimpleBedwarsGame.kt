@@ -3,9 +3,11 @@ package com.c1ok.bedwars.simple
 import com.c1ok.bedwars.*
 import com.c1ok.bedwars.instance.ReuseInstance
 import com.c1ok.bedwars.simple.block.BedHandler
+import com.c1ok.bedwars.simple.block.PlacedBlock
 import com.c1ok.yggdrasil.GameState
 import com.c1ok.yggdrasil.MiniPlayer
 import com.c1ok.yggdrasil.MiniPlayer.Companion.getOrigin
+import com.c1ok.yggdrasil.MiniPlayer.Companion.getOriginUnsafe
 import com.c1ok.yggdrasil.base.BaseMiniGame
 import com.c1ok.yggdrasil.util.Reason
 import com.c1ok.yggdrasil.util.Result
@@ -105,6 +107,9 @@ abstract class SimpleBedwarsGame(
             }
             return
         }
+        if (handler !is PlacedBlock) {
+            event.isCancelled = true
+        }
         if (instanceManager is ReuseInstance) {
             val ins = instanceManager as ReuseInstance
             if (ins.containBlock(event.blockPosition)) {
@@ -115,10 +120,22 @@ abstract class SimpleBedwarsGame(
         }
     }
 
+    override fun onPlaceBlock(event: PlayerBlockPlaceEvent) {
+        val block = event.block.withHandler(PlacedBlock.instance)
+        event.block = block
+        if (instanceManager is ReuseInstance) {
+            val ins = instanceManager as ReuseInstance
+            ins.addBlock(block, event.blockPosition)
+        }
+    }
+
     override fun onStart(): CompletableFuture<Void> {
         val void = super.onStart()
         Bedwars.instance.debugRunnable {
             logger.info("游戏{}开始了", this.displayName)
+        }
+        getTeams().filter { it.getIsWipedOut() }.forEach {
+            it.createBed()
         }
         getBedwarsPlayers().forEach {
             val player = it.miniPlayer.getOrigin() ?: return@forEach
@@ -126,14 +143,11 @@ abstract class SimpleBedwarsGame(
             player.inventory.clear()
             player.gameMode = GameMode.SURVIVAL
         }
-        return void
-    }
-
-    override fun onPlaceBlock(event: PlayerBlockPlaceEvent) {
-        if (instanceManager is ReuseInstance) {
-            val ins = instanceManager as ReuseInstance
-            ins.addBlock(event.block, event.blockPosition)
+        getBedwarsPlayers().forEach {
+            it.miniPlayer.getOriginUnsafe().teleport(it.getTeam()?.respawnPoint)
         }
+        generator.start()
+        return void
     }
 
     override fun onPlayerRespawn(event: PlayerRespawnEvent) {
@@ -180,11 +194,12 @@ abstract class SimpleBedwarsGame(
 
     @Synchronized
     override fun removePlayer(player: MiniPlayer): Result<Boolean> {
+        val bedwarsPlayer = bedwarsPlayers.firstOrNull { it.miniPlayer == player } ?: return Result(false, Reason.Failed("玩家不存在在这场游戏中"))
         val minePlayer = player.getOrigin() ?: let {
             bedwarsPlayers.removeIf { it.miniPlayer == player }
+            bedwarsPlayer.getTeam()?.removePlayer(bedwarsPlayer)
             return Result(false, Reason.Failed("玩家不存在"))
         }
-        val bedwarsPlayer = bedwarsPlayers.firstOrNull { it.miniPlayer == player } ?: return Result(false, Reason.Failed("玩家不存在在这场游戏中"))
         bedwarsPlayer.storedInventory.with(minePlayer)
         bedwarsPlayer.getTeam()?.removePlayer(bedwarsPlayer)
         if (gameStateMachine.getCurrentState() == GameState.LOBBY) {
@@ -208,6 +223,7 @@ abstract class SimpleBedwarsGame(
         Bedwars.instance.debugRunnable {
             logger.info("游戏{}结束了", this.displayName)
         }
+        generator.close()
         return super.onEnd()
     }
 
@@ -220,9 +236,9 @@ abstract class SimpleBedwarsGame(
         return getLobbySidebar()
     }
 
-    override fun restart(): CompletableFuture<Void> {
+    override fun onRestart(): CompletableFuture<Void> {
         println("Restart！")
-        val res = super.restart()
+        val res = super.onRestart()
         println("Restart！Successfully")
         return res
     }

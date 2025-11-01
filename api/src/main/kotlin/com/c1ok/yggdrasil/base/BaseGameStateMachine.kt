@@ -40,7 +40,6 @@ abstract class BaseGameStateMachine(override val game: BaseMiniGame): GameStateM
     }
 
     override fun startLobby() {
-        // 修正：只允许从 INITIALIZING 或 CLOSED 状态进入 LOBBY
         if (getCurrentState() != GameState.INITIALIZING && getCurrentState() != GameState.CLOSED) {
             logger.error("当前状态为 ${getCurrentState()}，无法进入等待大厅")
             return
@@ -112,11 +111,11 @@ abstract class BaseGameStateMachine(override val game: BaseMiniGame): GameStateM
     override fun restartGame() {
         Check.stateCondition(getCurrentState() == GameState.RESTARTING, "游戏已经进入重启状态了，无法再次进入")
         setState(GameState.RESTARTING)
-        game.restart().thenAccept {
+        game.onRestart().thenAccept {
             // 不直接调用 game.init()，而是提交一个延迟任务，目的是延迟到所有任务皆以关闭 :)
             SchedulerBuilder(game.instanceManager.getCurrentInstance().scheduler(), Runnable {
                 game.init()
-            }).delay(Duration.ofSeconds(5)).schedule() // 延迟 3 秒等待所有任务结束 :P
+            }).delay(Duration.ofSeconds(5)).schedule() // 延迟 5 秒等待所有任务结束 :P
         }
     }
 

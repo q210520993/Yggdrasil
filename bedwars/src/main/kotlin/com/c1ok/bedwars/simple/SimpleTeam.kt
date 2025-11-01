@@ -20,6 +20,7 @@ import net.minestom.server.inventory.InventoryType
 import net.minestom.server.item.ItemStack
 import net.minestom.server.item.Material
 import net.minestom.server.utils.Direction
+import xyz.xenondevs.invui.gui.Gui
 import java.util.*
 import java.util.concurrent.CopyOnWriteArraySet
 
@@ -51,7 +52,7 @@ open class SimpleTeam(
     }
 
     override fun getIsWipedOut(): Boolean {
-        return players.all { it.spectator } || players.size != 0
+        return players.all { it.spectator } || players.size == 0
     }
 
     override fun createBed() {
@@ -128,6 +129,8 @@ open class SimpleTeam(
         }
         return players.toList()
     }
+
+    override val shop: Gui = Gui.empty(9,3)
 
     override fun toString(): String {
         return "" +

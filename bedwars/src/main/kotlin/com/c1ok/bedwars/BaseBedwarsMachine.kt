@@ -10,12 +10,14 @@ open class BaseBedwarsMachine(override val game: SimpleBedwarsGame): BaseGameSta
     private val state_: AtomicReference<GameState> = AtomicReference(GameState.CLOSED)
 
     override fun getGameEndCondition(): Boolean {
-//        Bedwars.instance.debugRunnable {
-//            println("Test 01::${game.getCurrentState() == GameState.STARTING}")
-//            println("Test 02::${game.getBedwarsPlayers().isNotEmpty()}")
-//            println("Test 03::${game.getTeams().filter { !it.getIsWipedOut() }.size > 1}")
-//            println("Test 04::${GAME_TIME.getTime()}")
-//        }
+        Bedwars.instance.debugRunnable {
+            println("Test 01::${game.getCurrentState() == GameState.STARTING}")
+            println("Test 02::${game.getBedwarsPlayers().isNotEmpty()}")
+            println("Test 03::${game.getTeams().filter { 
+                !it.getIsWipedOut() 
+            }.size > 1}")
+            println("Test 04::${GAME_TIME.getTime()}")
+        }
         return  GAME_TIME.getTime() > 0 &&
                 getCurrentState() == GameState.STARTING &&
                 game.getTeams().filter { !it.getIsWipedOut() }.size > 1 &&

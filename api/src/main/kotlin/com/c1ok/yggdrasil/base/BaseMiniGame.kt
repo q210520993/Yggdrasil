@@ -96,7 +96,7 @@ abstract class BaseMiniGame: MiniGame {
         return CompletableFuture.completedFuture(null)
     }
 
-    override fun restart(): CompletableFuture<Void> {
+    override fun onRestart(): CompletableFuture<Void> {
         bounds.forEach {
             it.onRebuild()
         }

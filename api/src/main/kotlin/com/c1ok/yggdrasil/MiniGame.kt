@@ -82,10 +82,10 @@ interface MiniGame {
     /**
      * GameStateMachine会在restart的时候执行，这会进行一些清理操作
      */
-    fun restart(): CompletableFuture<Void>
+    fun onRestart(): CompletableFuture<Void>
 
     /**
-     * GameStateMachine会在shutdown的时候执行，这会进行一些关闭操作
+     * 这不绑定在GameStateMachine，这是强制关闭一个游戏房间的措施
      */
     fun shutdown(): CompletableFuture<Void>
 

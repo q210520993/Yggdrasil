@@ -9,6 +9,7 @@ import net.minestom.server.instance.block.Block
 import net.minestom.server.inventory.Inventory
 import net.minestom.server.item.ItemStack
 import net.minestom.server.utils.Direction
+import xyz.xenondevs.invui.gui.Gui
 import java.util.*
 
 interface Team {
@@ -19,7 +20,7 @@ interface Team {
     // 队伍名称（帽子绿，姨妈红...）
     val name: String
 
-    // 队伍展示名称在·
+    // 队伍展示名称
     val displayName: Component
 
     // 最小玩家数
@@ -63,7 +64,7 @@ interface Team {
     fun createBed()
     fun destroyBed()
 
-    // 队伍共享库存（更名明确用途）- 改进
+    // 队伍共享库存
     val sharedInventory: Inventory
 
     // 玩家管理方法
@@ -75,4 +76,10 @@ interface Team {
     fun getTeamItemStack(): ItemStack
 
     fun onGameStop()
+
+    /**
+     * 队伍的商店
+     */
+    val shop: Gui
+
 }
